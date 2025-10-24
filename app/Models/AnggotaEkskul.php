@@ -7,5 +7,24 @@ use Illuminate\Database\Eloquent\Model;
 
 class AnggotaEkskul extends Model
 {
-    use HasFactory;
+    protected $table = 'anggota_Ekskul';
+    protected $fillable = [
+        'anggota_kelas_id',
+        'Ekskul_id',
+    ];
+
+    public function anggota_kelas()
+    {
+        return $this->belongsTo('App\AnggotaKelas');
+    }
+
+    public function ekskul()
+    {
+        return $this->belongsTo('App\Ekskul');
+    }
+
+    public function nilai_ekskul()
+    {
+        return $this->hasOne('App\NilaiEkskul');
+    }
 }

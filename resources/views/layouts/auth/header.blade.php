@@ -19,5 +19,4 @@
     <link rel="stylesheet" href="assets/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="assets/dist/css/adminlte.min.css">
-    @vite(['resources/js/app.js'])
 </head>

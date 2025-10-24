@@ -7,5 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class MappingMapel extends Model
 {
-    use HasFactory;
+    protected $table = 'mapping_mapel';
+    protected $fillable = [
+        'mapel_id',
+        'kelompok',
+        'nomor_urut',
+    ];
+
+    public function mapel()
+    {
+        return $this->belongsTo('App\Mapel');
+    }
 }

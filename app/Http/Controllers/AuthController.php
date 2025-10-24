@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Guru;
+use App\Models\Kelas;
 use App\Models\RiwayatLogin;
 use App\Models\Tapel;
 use App\Models\User;
+use App\Rules\MatchOldPassword;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
@@ -79,18 +82,67 @@ class AuthController extends Controller
                         'akses_sebagai' => 'Guru Mapel',
                     ]);
                 }
-                return redirect('/dashboar')->with('toast_success', 'Login Berhasil');
+                return redirect('/dashboard')->with('toast_success', 'Login Berhasil');
             }
         }
     }
 
     public function logout(Request $request)
     {
-        RiwayatLogin::wehere('user_id', Auth::id())->update([
+        RiwayatLogin::where('user_id', Auth::id())->update([
             'status_login' => false
         ]);
         $request->session()->flush();
         Auth::logout();
         return redirect('/')->with('toast_success', 'Logout berhasil');
+    }
+
+    public function view_ganti_password()
+    {
+        $title = 'Ganti Password';
+        return view('auth.ganti_password', compact('title'));
+    }
+
+    public function ganti_password(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'password_lama' => ['required', new MatchOldPassword],
+            'password_baru' => 'required|min:6',
+            'konfirmasi_password' => 'required|same:password_baru',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->with('toast_error', $validator->errors()->all()[0])->withInput();
+        } else {
+            $user = User::findorfail(Auth::id());
+            $data = [
+                'password' => bcrypt($request->password_baru),
+            ];
+            $user->update($data);
+            RiwayatLogin::where('user_id', Auth::id())->update(['status_login' => false]);
+            Auth::logout();
+            return redirect('/')->with('toast_success', 'Password berhasil diganti, silahkan login !');
+        }
+    }
+
+    public function ganti_akses()
+    {
+        if (session()->get('akses_sebagai') == 'Guru Mapel') {
+            $guru = Guru::where('user_id', Auth::id())->first();
+            $cek_wali_kelas = Kelas::where('guru_id', $guru->id)->first();
+            if (!is_null($cek_wali_kelas)) {
+                session()->put([
+                    'akses_sebagai' => 'Wali Kelas',
+                ]);
+                return redirect('/dashboard')->with('toast_success', 'Akses wali kelas berhasil');
+            } else {
+                return back()->with('toast_error', 'Anda tidak memiliki akses sebagai wali kelas');
+            }
+        } else {
+            session()->put([
+                'akses_sebagai' => 'Guru Mapel',
+            ]);
+            return redirect('/dashboard')->with('toast_success', 'Akses guru mapel berhasil');
+        }
     }
 }

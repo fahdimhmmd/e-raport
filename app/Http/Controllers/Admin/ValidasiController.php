@@ -1,0 +1,80 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Models\AnggotaEkskul;
+use App\Models\Ekskul;
+use App\Models\Guru;
+use App\Http\Controllers\Controller;
+use App\Models\KdMapel;
+use App\Models\KkmMapel;
+use App\Models\MappingMapel;
+use App\Models\TglRaport;
+use App\Models\Kelas;
+use App\Models\Mapel;
+use App\Models\Pembelajaran;
+use App\Models\Siswa;
+use App\Models\Tapel;
+use Illuminate\Http\Request;
+
+class ValidasiController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        $title = 'Validasi Data';
+        $tapel = Tapel::findorfail(session()->get('tapel_id'));
+
+        // Validasi Data Master
+        $count_guru =  Guru::count();
+        $count_mapel = Mapel::where('tapel_id', $tapel->id)->orderBy('nama_mapel', 'ASC')->count();
+
+        $data_kelas = Kelas::where('tapel_id', $tapel->id)->orderBy('tingkatan_kelas', 'ASC')->get();
+        foreach ($data_kelas as $kelas) {
+            $jumlah_anggota = Siswa::where('kelas_id', $kelas->id)->count();
+            $kelas->jumlah_anggota = $jumlah_anggota;
+
+            $jumlah_pembelajaran = Pembelajaran::where('kelas_id', $kelas->id)->whereNotNull('guru_id')->where('status', 1)->count();
+            $kelas->jumlah_pembelajaran = $jumlah_pembelajaran;
+        }
+        $count_kelas = count($data_kelas);
+
+        $count_siswa = Siswa::where('status', 1)->count();
+        $count_siswa_invalid = Siswa::where('status', 1)->where('kelas_id', null)->count();
+
+        $data_ekskul = Ekskul::where('tapel_id', $tapel->id)->orderBy('nama_ekskul', 'ASC')->get();
+        foreach ($data_ekskul as $ekskul) {
+            $jumlah_anggota = AnggotaEkskul::where('ekskul_id', $ekskul->id)->count();
+            $ekskul->jumlah_anggota = $jumlah_anggota;
+        }
+        $count_ekskul = count($data_ekskul);
+        // End Validasi Data Master 
+
+        // Validasi data Setting
+        $id_mapel = Mapel::where('tapel_id', $tapel->id)->get('id');
+        $id_telah_mapping =  MappingMapel::whereIn('mapel_id', $id_mapel)->get('mapel_id');
+        $mapel_belum_mapping = Mapel::whereNotIn('id', $id_telah_mapping)->get();
+        $count_mapel_belum_mapping = count($mapel_belum_mapping);
+
+        $id_kelas = Kelas::where('tapel_id', $tapel->id)->orderBy('tingkatan_kelas', 'ASC')->get('id');
+        $count_pembelajaran = Pembelajaran::whereIn('kelas_id', $id_kelas)->whereNotNull('guru_id')->where('status', 1)->count();
+        $count_kkm = KkmMapel::whereIn('kelas_id', $id_kelas)->whereIn('mapel_id', $id_mapel)->count();
+
+        $data_kd = Mapel::where('tapel_id', $tapel->id)->orderBy('nama_mapel', 'ASC')->get();
+        foreach ($data_kd as $kd) {
+            $jumlah_kd_mapel = KdMapel::where('mapel_id', $kd->id)->count();
+            $kd->jumlah_kd_mapel = $jumlah_kd_mapel;
+        }
+        $count_data_kd = count($data_kd);
+
+        $count_tgl_raport = TglRaport::where('tapel_id', $tapel->id)->count();
+
+        // End validasi data Setting
+
+        return view('admin.validasi.index', compact('title', 'tapel', 'count_guru', 'count_mapel', 'data_kelas', 'count_kelas', 'count_siswa', 'count_siswa_invalid', 'data_ekskul', 'count_ekskul', 'mapel_belum_mapping', 'count_mapel_belum_mapping', 'count_pembelajaran', 'count_kkm', 'count_sikap_spiritual', 'count_sikap_sosial', 'data_kd', 'count_data_kd', 'count_tgl_raport'));
+    }
+}

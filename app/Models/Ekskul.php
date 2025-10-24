@@ -7,50 +7,30 @@ use Illuminate\Database\Eloquent\Model;
 
 class Ekskul extends Model
 {
-    protected $table = 'siswa';
+    protected $table = 'ekskul';
     protected $fillable = [
-        'user_id',
-        'kelas_id',
-        'jenis_pendaftaran',
-        'nis',
-        'nisn',
-        'nama_lengkap',
-        'tempat_lahir',
-        'tanggal_lahir',
-        'jenis_kelamin',
-        'agama',
-        'status_dalam_keluarga',
-        'anak_ke',
-        'alamat',
-        'nomor_hp',
-        'nama_ayah',
-        'nama_ibu',
-        'pekerjaan_ayah',
-        'pekerjaan_ibu',
-        'nama_wali',
-        'pekerjaan_wali',
-        'avatar',
-        'status'
+        'tapel_id',
+        'pembina_id',
+        'nama_ekskul',
     ];
-    protected $dates = ['tanggal_lahir'];
 
-    public function user()
+    public function tapel()
     {
-        return $this->belongsTo('App\User');
+        return $this->belongsTo('App\Tapel');
     }
 
-    public function kelas()
+    public function pembina()
     {
-        return $this->belongsTo('App\Kelas');
+        return $this->belongsTo('App\Guru');
     }
 
-    public function anggota_kelas()
+    public function anggota_ekskul()
     {
-        return $this->hasMany('App\AnggotaKelas');
+        return $this->hasMany('App\AnggotaEkskul');
     }
 
-    public function siswa_keluar()
+    public function nilai_ekskul()
     {
-        return $this->hasOne('App\SiswaKeluar');
+        return $this->hasMany('App\NilaiEkskul');
     }
 }

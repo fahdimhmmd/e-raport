@@ -30,11 +30,11 @@ class User extends Authenticatable
 
     public function admin()
     {
-        return $this->hasOne('App\Admin');
+        return $this->hasOne('App\Models\Admin');
     }
     public function guru()
     {
-        return $this->hasOne('App\Guru');
+        return $this->hasOne('App\Models\Guru');
     }
     public function siswa()
     {
@@ -42,6 +42,6 @@ class User extends Authenticatable
     }
     public function pengumuman()
     {
-        return $this->hasMany('App\Pengumuman');
+        return $this->hasMany('App\Models\Pengumuman');
     }
 }
