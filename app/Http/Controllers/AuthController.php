@@ -83,4 +83,14 @@ class AuthController extends Controller
             }
         }
     }
+
+    public function logout(Request $request)
+    {
+        RiwayatLogin::wehere('user_id', Auth::id())->update([
+            'status_login' => false
+        ]);
+        $request->session()->flush();
+        Auth::logout();
+        return redirect('/')->with('toast_success', 'Logout berhasil');
+    }
 }
